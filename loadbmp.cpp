@@ -10,6 +10,8 @@ using namespace std;
 
 
 int load_bmp(int argc, char **argv, unsigned char b[][224], unsigned char g[][224], unsigned char r[][224]){
+//int load_bmp(int argc, char **argv, float input[MAX_FMAP_SIZE]){
+
 
     HEADER fileHeader;
     INFOHEADER infoHeader;

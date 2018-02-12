@@ -1,0 +1,6 @@
+#!/bin/bash 
+
+for f in *Conv2d_*.dat; do
+    mv "$f" "${f/depthwis_/depthwise_}";
+    mv "$f" "${f/pointwis_/pointwise_}";
+done
