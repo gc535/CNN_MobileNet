@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <stdlib.h>
 
 #include "main.h"
 
@@ -39,7 +40,36 @@ int perform_BatchNorm (float input[MAX_FMAP_SIZE], const float y, const float mo
 			}
 		} 
 	}
-
+	/*
+	//print values for checking
+	printf("pixel 0, 0\n");
+	fprintf(stderr, "Mul Node\n");
+	//Check mul node values
+	for(int i=0; i<N; i++){
+		fprintf(stderr, "%f\n", mul_output[i]);
+	}
+	printf("\n");	
+	fprintf(stderr, "Input multiplied w/ mul node\n");
+	//post multiply node
+	for(int i=0; i<N; i++){
+		int o_index = 0 + 0 * O + i * (O*O);
+		fprintf(stderr, "%f\n", input[o_index]);
+	}	
+	printf("\n");
+	
+	//print values for checking
+	printf("pixel 111, 111\n");
+	printf("\n");	
+	fprintf(stderr, "Input multiplied w/ mul node\n");
+	//post multiply node
+	for(int i=0; i<N; i++){
+		int o_index = 111 + 111 * O + i * (O*O);
+		fprintf(stderr, "%f\n", input[o_index]);
+	}	
+	printf("\n");
+	
+	*/
+	
 	float mul_output_2[N];
 
 	for(int ele=0; ele<N; ele++){
@@ -64,8 +94,35 @@ int perform_BatchNorm (float input[MAX_FMAP_SIZE], const float y, const float mo
 			}
 		}
 	}
+	/*
+	//print values for checking 
+	fprintf(stderr, "sub Node\n");
+	//Check mul node values
+	for(int i=0; i<N; i++){
+		fprintf(stderr, "%f\n", sub[i]);
+	}	
+	printf("\n");
+	printf("printing pixel 0,0\n");
+	fprintf(stderr, "Input added w/ sub node\n");
+	//post multiply node
+	for(int i=0; i<N; i++){
+		int o_index = O-1 + O-1 * O + i * (O*O);
+		fprintf(stderr, "%f\n", input[o_index]);
+	}
 	
-
+	
+	//print values for checking 
+	printf("\n");
+	printf("checking pixel 111,111\n");
+	fprintf(stderr, "Input added w/ sub node\n");
+	//post multiply node
+	for(int i=0; i<N; i++){
+		int o_index = 111 + 111 * O + i * (O*O);
+		fprintf(stderr, "%f\n", input[o_index]);
+	}
+	
+	*/
+	
 	//RELU, will go through matrix elementwise and make negative values 0
 	//float relu_output[O][O][N];
 
@@ -74,6 +131,7 @@ int perform_BatchNorm (float input[MAX_FMAP_SIZE], const float y, const float mo
 			for(int k=0; k<N; k++){
 				int i_index = i + j * O + k * ofmap_size;
 				input[i_index] = (input[i_index] > 0) ? input[i_index] : 0;
+				input[i_index] = (input[i_index] <= 6) ? input[i_index] : 6;
 				//if(input[i_index]<0){
 				//	input[i_index]=0;
 				//}

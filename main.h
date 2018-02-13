@@ -29,29 +29,29 @@ int main(int argc,char **argv);
 
 
 //Layer 0 Weights
-const float conv_weight_0[864] = {
+const float conv_weight_0[MAX_W_CONV] = {
 	#include "test/Conv2d_0_lay_0_conv_weights.dat"
 };
 
-const float moving_variance_0[32]  = {
+const float moving_variance_0[MAX_MOVING_VARIANCE]  = {
 	#include "test/Conv2d_0_moving_variance.dat"
 };
 
-const float moving_mean_0[32] = {
+const float moving_mean_0[MAX_MOVING_MEAN] = {
 	#include "test/Conv2d_0_moving_mean.dat"	
 };
 
-const float beta_0[32] = {
+const float beta_0[MAX_BETA] = {
 	#include "test/Conv2d_0_beta.dat"	
 };
 
-const float gamma_0[32] = {
+const float gamma_0[MAX_GAMMA] = {
 	#include "test/Conv2d_0_gamma.dat"
 };
 
 
 //Layer 1 Depthwise Weights
-const float depth_conv_weight_1[288] = {
+const float depth_conv_weight_1[MAX_W_CONV] = {
 	#include "test/Conv2d_1_depthwise_depthwise_weights.dat"
 };
 
