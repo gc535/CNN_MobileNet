@@ -7,7 +7,7 @@
 
 
 #include "main.h"
-//#include "loadbmp.h"
+#include "loadbmp.h"
 #include "perform_conv2d.h"
 #include "batchnorm_relu.h"
 #include "logit_layer.h"
@@ -20,16 +20,7 @@
 
 class Layer_Helper{
     public:
-        void get_intermediate_first(float input[MAX_FMAP_SIZE], int O, int N){
-            int offset = 0;  //last element of every output fmap, 
-            for(int n=0; n<N; n++){
-                int o_index =  offset + n*(112*112);     //indexing into first element of next fmap;
-                fprintf(stderr, "%e\n", input[o_index]);
-            }
-    
-        }
-
-        void get_intermediate_last(float input[MAX_FMAP_SIZE], int O, int N){
+        void get_intermediate(float input[MAX_FMAP_SIZE], int O, int N){
             int offset = (O-1) + (O-1) * O;  //last element of every output fmap, 
             for(int n=0; n<N; n++){
                 int o_index =  offset + n*(112*112);     //indexing into last element of next fmap;
@@ -42,18 +33,19 @@ class Layer_Helper{
 
 
 int main(int argc,char **argv){
-
+    /*
 	float mem_conv1[MAX_FMAP_SIZE] = {
 		#include "bmp_normalized_from_python.dat"
 		};
   	float mem_conv2[MAX_FMAP_SIZE];
   	Layer_Helper lh;
-  	/*
+  	*/
 	unsigned char b_input[224][224];
 	unsigned char g_input[224][224];
 	unsigned char r_input[224][224];
 
-    
+    float mem_conv1[MAX_FMAP_SIZE];
+    float mem_conv2[MAX_FMAP_SIZE];
 
     //load BMP RGB array into input array
     load_bmp(argc, argv, b_input, g_input, r_input);
@@ -67,8 +59,8 @@ int main(int argc,char **argv){
         	mem_conv1[i_index_r] = ((float)r_input[x][y]-mean)/st_dev;
         	mem_conv1[i_index_g] = ((float)g_input[x][y]-mean)/st_dev;
         	mem_conv1[i_index_b] = ((float)b_input[x][y]-mean)/st_dev;
-        	printf("X: %d\t Y: %d\n", x, y);
-			printf("R: %d, G:%d, B:%d\n", mem_conv1[i_index_r], mem_conv1[i_index_g], mem_conv1[i_index_b]);
+        	//printf("X: %d\t Y: %d\n", x, y);
+			//printf("R: %d, G:%d, B:%d\n", mem_conv1[i_index_r], mem_conv1[i_index_g], mem_conv1[i_index_b]);
         	//3D array mapping(working)
             // input[x][y][0] = ((float)r[x][y]-mean)/st_dev;
             // input[x][y][1] = ((float)g[x][y]-mean)/st_dev;
@@ -76,7 +68,7 @@ int main(int argc,char **argv){
             
         }
     }
-    */
+    
 	
 
 	//CONVOLUTION 
@@ -200,22 +192,69 @@ int main(int argc,char **argv){
 	//layer4 point
 	perform_pointwise_conv2d(mem_conv1, mem_conv2, point_conv_weight_4, 28, 28, 256, 128, 1, 1);
 	perform_BatchNorm(mem_conv2, 0.0010000000475, moving_variance_point_4, gamma_point_4, moving_mean_point_4, beta_point_4, 256, 28);	
-/*	
+	
+	//~ printf("checking pixel 27,27\n");
+	//~ for(int i=0; i<128; i++){
+		//~ int base_offset = 27 + 27 * 28 + i * (28*28);
+		//~ fprintf(stderr, "%f\n", mem_conv2[base_offset]);
+	//~ }
+	//~ printf("checking pixel 0,0\n");
+	//~ for(int i=0; i<64; i++){
+		//~ int base_offset = 0 + 0 * 28 + i * (28*28);
+		//~ fprintf(stderr, "%f\n", mem_conv2[base_offset]);
+	//~ }
+
 	//layer5 depth
 	perform_depthwise_conv2d(mem_conv2, mem_conv1, depth_conv_weight_5, 28, 28, 1, 256, 3, 1);
 	perform_BatchNorm(mem_conv1, 0.0010000000475, moving_variance_depth_5, gamma_depth_5, moving_mean_depth_5, beta_depth_5, 256, 28);	
 	
+	//~ printf("checking pixel 27,27\n");
+	//~ for(int i=0; i<256; i++){
+		//~ int base_offset = 27 + 27 * 28 + i * (28*28);
+		//~ fprintf(stderr, "%f\n", mem_conv1[base_offset]);
+	//~ }
+	//~ printf("checking pixel 0,0\n");
+	//~ for(int i=0; i<256; i++){
+		//~ int base_offset = 0 + 0 * 28 + i * (28*28);
+		//~ fprintf(stderr, "%f\n", mem_conv1[base_offset]);
+	//~ }	
+	
+
 	//layer5 point
 	perform_pointwise_conv2d(mem_conv1, mem_conv2, point_conv_weight_5, 28, 28, 256, 256, 1, 1);
 	perform_BatchNorm(mem_conv2, 0.0010000000475, moving_variance_point_5, gamma_point_5, moving_mean_point_5, beta_point_5, 256, 28);	
+	
+	//~ printf("checking pixel 27,27\n");
+	//~ for(int i=0; i<256; i++){
+		//~ int base_offset = 27 + 27 * 28 + i * (28*28);
+		//~ fprintf(stderr, "%f\n", mem_conv2[base_offset]);
+	//~ }
+	//~ printf("checking pixel 0,0\n");
+	//~ for(int i=0; i<256; i++){
+		//~ int base_offset = 0 + 0 * 28 + i * (28*28);
+		//~ fprintf(stderr, "%f\n", mem_conv2[base_offset]);
+	//~ }	
+
 		
 	//layer6 depth
 	perform_depthwise_conv2d(mem_conv2, mem_conv1, depth_conv_weight_6, 14, 28, 1, 256, 3, 2);
 	perform_BatchNorm(mem_conv1, 0.0010000000475, moving_variance_depth_6, gamma_depth_6, moving_mean_depth_6, beta_depth_6, 256, 14);	
-	
+
+	//~ printf("checking pixel 13,13\n");
+	//~ for(int i=0; i<256; i++){
+		//~ int base_offset = 13 + 13 * 14 + i * (14*14);
+		//~ fprintf(stderr, "%f\n", mem_conv1[base_offset]);
+	//~ }
+	//~ printf("checking pixel 0,0\n");
+	//~ for(int i=0; i<256; i++){
+		//~ int base_offset = 0 + 0 * 14 + i * (14*14);
+		//~ fprintf(stderr, "%f\n", mem_conv1[base_offset]);
+	//~ }
+
 	//layer6 point
 	perform_pointwise_conv2d(mem_conv1, mem_conv2, point_conv_weight_6, 14, 14, 512, 256, 1, 1);
 	perform_BatchNorm(mem_conv2, 0.0010000000475, moving_variance_point_6, gamma_point_6, moving_mean_point_6, beta_point_6, 512, 14);	
+
 		
 	//layer7 depth
 	perform_depthwise_conv2d(mem_conv2, mem_conv1, depth_conv_weight_7, 14, 14, 1, 512, 3, 1);
@@ -224,6 +263,18 @@ int main(int argc,char **argv){
 	//layer7 point
 	perform_pointwise_conv2d(mem_conv1, mem_conv2, point_conv_weight_7, 14, 14, 512, 512, 1, 1);
 	perform_BatchNorm(mem_conv2, 0.0010000000475, moving_variance_point_7, gamma_point_7, moving_mean_point_7, beta_point_7, 512, 14);	
+	
+	//~ printf("checking pixel 13,13\n");
+	//~ for(int i=0; i<512; i++){
+		//~ int base_offset = 13 + 13 * 14 + i * (14*14);
+		//~ fprintf(stderr, "%f\n", mem_conv2[base_offset]);
+	//~ }
+	//~ printf("checking pixel 0,0\n");
+	//~ for(int i=0; i<512; i++){
+		//~ int base_offset = 0 + 0 * 14 + i * (14*14);
+		//~ fprintf(stderr, "%f\n", mem_conv2[base_offset]);
+	//~ }
+
 		
 	//layer8 depth
 	perform_depthwise_conv2d(mem_conv2, mem_conv1, depth_conv_weight_8, 14, 14, 1, 512, 3, 1);
@@ -239,7 +290,19 @@ int main(int argc,char **argv){
 		
 	//layer9 point
 	perform_pointwise_conv2d(mem_conv1, mem_conv2, point_conv_weight_9, 14, 14, 512, 512, 1, 1);
-	perform_BatchNorm(mem_conv2, 0.0010000000475, moving_variance_point_4, gamma_point_4, moving_mean_point_4, beta_point_4, 256, 28);
+	perform_BatchNorm(mem_conv2, 0.0010000000475, moving_variance_point_9, gamma_point_9, moving_mean_point_9, beta_point_9, 512, 14);
+
+	//~ printf("checking pixel 13,13\n");
+	//~ for(int i=0; i<512; i++){
+		//~ int base_offset = 13 + 13 * 14 + i * (14*14);
+		//~ fprintf(stderr, "%f\n", mem_conv2[base_offset]);
+	//~ }
+	//~ printf("checking pixel 0,0\n");
+	//~ for(int i=0; i<512; i++){
+		//~ int base_offset = 0 + 0 * 14 + i * (14*14);
+		//~ fprintf(stderr, "%f\n", mem_conv2[base_offset]);
+	//~ }
+	
 			
 	//layer10 depth
 	perform_depthwise_conv2d(mem_conv2, mem_conv1, depth_conv_weight_10, 14, 14, 1, 512, 3, 1);
@@ -249,17 +312,17 @@ int main(int argc,char **argv){
 	perform_pointwise_conv2d(mem_conv1, mem_conv2, point_conv_weight_10, 14, 14, 512, 512, 1, 1);
 	perform_BatchNorm(mem_conv2, 0.0010000000475, moving_variance_point_10, gamma_point_10, moving_mean_point_10, beta_point_10, 512, 14);
 	
-	//printf("checking pixel 13,13\n");
-	//for(int i=0; i<64; i++){
-	//	int base_offset = 13 + 13 * 14 + i * (14*14);
-	//	fprintf(stderr, "%f\n", mem_conv2[base_offset]);
-	//}
-	//printf("checking pixel 0,0\n");
-	//for(int i=0; i<64; i++){
-	//	int base_offset = 0 + 0 * 14 + i * (14*14);
-	//	fprintf(stderr, "%f\n", mem_conv2[base_offset]);
-	//}
-			
+	//~ printf("checking pixel 13,13\n");
+	//~ for(int i=0; i<64; i++){
+		//~ int base_offset = 13 + 13 * 14 + i * (14*14);
+		//~ fprintf(stderr, "%f\n", mem_conv2[base_offset]);
+	//~ }
+	//~ printf("checking pixel 0,0\n");
+	//~ for(int i=0; i<64; i++){
+		//~ int base_offset = 0 + 0 * 14 + i * (14*14);
+		//~ fprintf(stderr, "%f\n", mem_conv2[base_offset]);
+	//~ }
+
 	//layer11 depth
 	perform_depthwise_conv2d(mem_conv2, mem_conv1, depth_conv_weight_11, 14, 14, 1, 512, 3, 1);
 	perform_BatchNorm(mem_conv1, 0.0010000000475, moving_variance_depth_11, gamma_depth_11, moving_mean_depth_11, beta_depth_11, 512, 14);
@@ -271,10 +334,36 @@ int main(int argc,char **argv){
 	//layer12 depth
 	perform_depthwise_conv2d(mem_conv2, mem_conv1, depth_conv_weight_12, 7, 14, 1, 512, 3, 2);
 	perform_BatchNorm(mem_conv1, 0.0010000000475, moving_variance_depth_12, gamma_depth_12, moving_mean_depth_12, beta_depth_12, 512, 7);
+	
+	//~ printf("checking pixel 6,6\n");
+	//~ for(int i=0; i<512; i++){
+		//~ int base_offset = 6 + 6 * 7 + i * (7*7);
+		//~ fprintf(stderr, "%f\n", mem_conv1[base_offset]);
+	//~ }
+	//~ printf("checking pixel 0,0\n");
+	//~ for(int i=0; i<512; i++){
+		//~ int base_offset = 0 + 0 * 7 + i * (7*7);
+		//~ fprintf(stderr, "%f\n", mem_conv1[base_offset]);
+	//~ }	
+	
 		
 	//layer12 point
 	perform_pointwise_conv2d(mem_conv1, mem_conv2, point_conv_weight_12, 7, 7, 1024, 512, 1, 1);
 	perform_BatchNorm(mem_conv2, 0.0010000000475, moving_variance_point_12, gamma_point_12, moving_mean_point_12, beta_point_12, 1024, 7);
+	
+	//~ printf("checking pixel 6,6\n");
+	//~ for(int i=0; i<1024; i++){
+		//~ int base_offset = 6 + 6 * 7 + i * (7*7);
+		//~ fprintf(stderr, "%f\n", mem_conv2[base_offset]);
+	//~ }
+	//~ printf("checking pixel 0,0\n");
+	//~ for(int i=0; i<1024; i++){
+		//~ int base_offset = 0 + 0 * 7 + i * (7*7);
+		//~ fprintf(stderr, "%f\n", mem_conv2[base_offset]);
+	//~ }	
+		
+	
+
 			
 	//layer13 depth
 	perform_depthwise_conv2d(mem_conv2, mem_conv1, depth_conv_weight_13, 7, 7, 1, 1024, 3, 1);
@@ -284,29 +373,49 @@ int main(int argc,char **argv){
 	perform_pointwise_conv2d(mem_conv1, mem_conv2, point_conv_weight_13, 7, 7, 1024, 1024, 1, 1);
 	perform_BatchNorm(mem_conv2, 0.0010000000475, moving_variance_point_13, gamma_point_13, moving_mean_point_13, beta_point_13, 1024, 7);
 	
-	//printf("check for 0,0\n");
-	//for(int i=0; i<1024; i++){
-	//	int o_index = 0 + 0 * 7 + i * (7*7);
-	//	fprintf(stderr, "%f\n", mem_conv2[o_index]);
-	//}	
-	//printf("check for 6,6\n");
-	//for(int i=0; i<1024; i++){
-	//	int o_index = 6 + 6 * 7 + i * (7*7);
-	//	fprintf(stderr, "%f\n", mem_conv2[o_index]);
-	//}	
+	//~ printf("checking pixel 6,6\n");
+	//~ for(int i=0; i<1024; i++){
+		//~ int base_offset = 6 + 6 * 7 + i * (7*7);
+		//~ fprintf(stderr, "%f\n", mem_conv2[base_offset]);
+	//~ }
+	//~ printf("checking pixel 0,0\n");
+	//~ for(int i=0; i<1024; i++){
+		//~ int base_offset = 0 + 0 * 7 + i * (7*7);
+		//~ fprintf(stderr, "%f\n", mem_conv2[base_offset]);
+	//~ }	
+
   
     //LOGIT LAYER
     //void perform_conv2d (float input[MAX_FMAP_SIZE], float output[MAX_FMAP_SIZE], const float conv_weight[MAX_W_CONV], int O, int I, int N, int M, int K, int S){
-	//				 
+	//void avg_pool2d(float input[MAX_FMAP_SIZE], float output[MAX_FMAP_SIZE], int O, int I, int N, int M, int K, int S)				 
     avg_pool2d(mem_conv2, mem_conv1, 1, 7, 1024, 1024, 7, 2);
-    dropout(mem_conv1, 1, 1, 1024, 1024, 50);
-    perform_conv2d(mem_conv1, mem_conv2, logit_conv_weight, 1, 1, 1001, 1024, 1, 1);
     
+    
+    //~ printf("avgpooling check\n");
+	//~ for(int i=0; i<1024; i++){
+		//~ fprintf(stderr, "%f\n", mem_conv1[i]);
+	//~ }	
+    
+    //dropout operation not needed in inference, only training
+    //dropout(mem_conv1, 1, 1, 1024, 1024, 50);
+    perform_pointwise_conv2d(mem_conv1, mem_conv2, logit_conv_weight, 1, 1, 1001, 1024, 1, 1);
+    
+    //~ printf("conv2d check\n");
+	//~ for(int i=0; i<1001; i++){
+		//~ fprintf(stderr, "%f\n", mem_conv2[i]);
+	//~ }	
+
+ 
     //Add Biases
     for(int i=0; i<1001; i++){
 		mem_conv2[i] += logit_bias_weight[i];
 	}
-    
+
+    //~ printf("logit bias check\n");
+	//~ for(int i=0; i<1001; i++){
+		//~ fprintf(stderr, "%f\n", mem_conv2[i]);
+	//~ }	
+ 
     //Predictions
     float softmax_denom = 0;
     for(int i=0; i<1001; i++){
@@ -334,6 +443,6 @@ int main(int argc,char **argv){
     // - Test Inference on images
     
     printf("Final Prediction: %d\n", prediction);
-*/    
+    
     return 0;
 }

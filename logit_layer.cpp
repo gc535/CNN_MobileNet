@@ -12,6 +12,7 @@ void avg_pool2d(float input[MAX_FMAP_SIZE], float output[MAX_FMAP_SIZE], int O, 
 {
 	// initialize output fmaps,	
 	for(int i = 0; i < MAX_FMAP_SIZE; i++) output[i] = 0;
+	
 	int ifmap_size = I*I;
 	int ofmap_size = O*O;
 
@@ -19,9 +20,10 @@ void avg_pool2d(float input[MAX_FMAP_SIZE], float output[MAX_FMAP_SIZE], int O, 
 	for (int n = 0; n < N; n++) {//#iterate over number of output channels
 			//accumulator variable gets incremented by each pixel value in input fmap
 			float accumulator = 0;
-			for (int x = 0; x < O; x++) {//iterate over number of rows in output fmap
-				for (int y = 0; y < O; y++) {//iterate over number of cols in output fmap
-					accumulator += input[x + y*I + n*ifmap_size];
+			for (int x = 0; x < I; x++) {//iterate over number of rows in output fmap
+				for (int y = 0; y < I; y++) {//iterate over number of cols in output fmap
+					int i_index = x + y*I + n*ifmap_size;
+					accumulator += input[i_index];
 				}
 			}
 			int o_index = n * ofmap_size;
