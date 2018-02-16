@@ -4,6 +4,7 @@
 #include <sstream>
 #include <iostream>
 #include <math.h>
+#include <stdlib.h>
 
 
 #include "main.h"
@@ -12,6 +13,7 @@
 #include "batchnorm_relu.h"
 #include "logit_layer.h"
 
+unsigned char* readBMP(char*);
 
 //cast int -> string type
 #define SSTR( x ) static_cast< std::ostringstream & >( \
@@ -31,15 +33,70 @@ class Layer_Helper{
 }; 
 
 
+unsigned char* readBMP(char* filename)
+{
+    int i;
+    FILE* f = fopen(filename, "rb");
+    unsigned char info[54];
+    fread(info, sizeof(unsigned char), 54, f); // read the 54-byte header
 
+<<<<<<< HEAD
 int main(int argc,char **argv){
     /*
+=======
+    // extract image height and width from header
+    int width = *(int*)&info[18];
+    int height = *(int*)&info[22];
+
+    int size = 3 * width * height;
+    unsigned char* data = new unsigned char[size]; // allocate 3 bytes per pixel
+    fread(data, sizeof(unsigned char), size, f); // read the rest of the data at once
+    fclose(f);
+
+    for(i = 0; i < size; i += 3)
+    {
+            unsigned char tmp = data[i];
+            data[i] = data[i+2];
+            data[i+2] = tmp;
+    }
+	//data should contain the (R, G, B) values of the pixels. The color of pixel (i, j) is stored at 
+	//data[j * width + i], data[j * width + i + 1] and data[j * width + i + 2].
+    return data;
+}
+
+
+
+int main(int argc,char **argv){
+	
+	unsigned char *raw_RGB_input = readBMP(argv[1]);
+	
+>>>>>>> 7718e49381efb12b35cfb463c47ddb2fc376f7a4
 	float mem_conv1[MAX_FMAP_SIZE] = {
-		#include "bmp_normalized_from_python.dat"
+		#include "normalized_car2_bmp.dat"
 		};
+	//float mem_conv1[MAX_FMAP_SIZE];
   	float mem_conv2[MAX_FMAP_SIZE];
   	Layer_Helper lh;
+<<<<<<< HEAD
   	*/
+=======
+  	
+  	//~ for(int i=0; i<224; i++){
+		//~ for(int j=0; j<224; j++){
+			//~ int i_index_r = i + j*224 + 0*(224*224);
+			//~ int i_index_g = i + j*224 + 1*(224*224);
+			//~ int i_index_b = i + j*224 + 2*(224*224);
+			//~ float r_val = atof( (const char*) raw_RGB_input[i + j*224]);
+			//~ float g_val = atof( (const char*) raw_RGB_input[i + j*224 + 1]);
+			//~ float b_val = atof( (const char*) raw_RGB_input[i + j*224 + 2]);
+			//~ mem_conv1[i_index_r] = (float) ( (r_val-mean)/st_dev );
+			//~ mem_conv1[i_index_g] = (float) ( (g_val-mean)/st_dev );
+			//~ mem_conv1[i_index_b] = (float) ( (b_val-mean)/st_dev );
+		//~ }
+	//~ }
+  	
+  	/*
+>>>>>>> 7718e49381efb12b35cfb463c47ddb2fc376f7a4
 	unsigned char b_input[224][224];
 	unsigned char g_input[224][224];
 	unsigned char r_input[224][224];
@@ -49,6 +106,9 @@ int main(int argc,char **argv){
 
     //load BMP RGB array into input array
     load_bmp(argc, argv, b_input, g_input, r_input);
+    //printf("red = %d, green = %d, blue = %d. \n", r_input[0][0], g_input[0][0], b_input[0][0]);
+
+    
     for(int x = 0; x<224; x++){
         for(int y = 0; y < 224; y++){
 
@@ -82,7 +142,7 @@ int main(int argc,char **argv){
     //void perform_conv2d (float* input, float* output, const float* conv_weight, int O, int I, int N, int M, int K, int S);
 	//int perform_BatchNorm (float* input_bn, const float y, const float* moving_variance, const float* gamma, const float* moving_mean, const float* beta, int N, int O);
 
-	fprintf(stderr, "layer 0\n");
+	//fprintf(stderr, "layer 0\n");
   	//layer 0
 	perform_conv2d(mem_conv1, mem_conv2, conv_weight_0, 112, 224, 32, 3, 3, 2);
 	
@@ -98,7 +158,9 @@ int main(int argc,char **argv){
 	//	fprintf(stderr, "%e\n", mem_conv2[base_offset]);
 	//}
 
-	fprintf(stderr, "layer 1 depthwise\n");
+	//fprintf(stderr, "layer 1 depthwise\n");
+	
+	
 	//layer 1 depthwise
 	perform_depthwise_conv2d(mem_conv2, mem_conv1, depth_conv_weight_1, 112, 112, 1, 32, 3, 1);
 	//for(int i=0; i<32; i++){
@@ -114,7 +176,9 @@ int main(int argc,char **argv){
 	//}
 	
 
- 	fprintf(stderr, "layer 1 pointwise\n");
+ 	//fprintf(stderr, "layer 1 pointwise\n");
+ 	
+ 	
 	//layer 1 pointwise
 	//void perform_conv2d (float* input, float* output, const float* conv_weight, int O, int I, int N, int M, int K, int S);
 	perform_pointwise_conv2d(mem_conv1, mem_conv2, point_conv_weight_1, 112, 112, 64, 32, 1, 1);
@@ -411,10 +475,10 @@ int main(int argc,char **argv){
 		mem_conv2[i] += logit_bias_weight[i];
 	}
 
-    //~ printf("logit bias check\n");
-	//~ for(int i=0; i<1001; i++){
-		//~ fprintf(stderr, "%f\n", mem_conv2[i]);
-	//~ }	
+    printf("logit bias check\n");
+	for(int i=0; i<1001; i++){
+		fprintf(stderr, "%f\n", mem_conv2[i]);
+	}	
  
     //Predictions
     float softmax_denom = 0;
@@ -443,6 +507,6 @@ int main(int argc,char **argv){
     // - Test Inference on images
     
     printf("Final Prediction: %d\n", prediction);
-    
+ 
     return 0;
 }

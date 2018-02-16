@@ -51,11 +51,11 @@ int load_bmp(int argc, char **argv, unsigned char b[][224], unsigned char g[][22
     // unsigned char g[infoHeader.height][infoHeader.width];
     // unsigned char r[infoHeader.height][infoHeader.width];
     
-    for(int i=0; i < infoHeader.height; i++){
+    for(int i=infoHeader.height-1; i > -1; i--){
         for(int j=0; j < infoHeader.width; j++){
-            fread(&b[i][j], sizeof(unsigned char),1,f);
-            fread(&g[i][j], sizeof(unsigned char),1,f);
-            fread(&r[i][j], sizeof(unsigned char),1,f);
+            fread(&b[i][(j+196)%infoHeader.width], sizeof(unsigned char),1,f);  //offset by 196 becasue Tensorflow did so in ther bmp decoding.
+            fread(&g[i][(j+196)%infoHeader.width], sizeof(unsigned char),1,f);  //offset by 196 becasue Tensorflow did so in ther bmp decoding.
+            fread(&r[i][(j+196)%infoHeader.width], sizeof(unsigned char),1,f);  //offset by 196 becasue Tensorflow did so in ther bmp decoding.
         }
     }
             
